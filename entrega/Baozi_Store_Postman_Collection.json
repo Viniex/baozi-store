@@ -1,0 +1,1242 @@
+{
+  "info": {
+    "name": "Baozi Store - API REST",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "# Baozi Store - API REST\n\nAluno: **Vinícius Barbosa Silva** (RU 5474751)\n\n## Como usar\n1. Suba a API: `mvn spring-boot:run` (http://localhost:8080).\n2. Execute as pastas **1 a 4** na ordem (botão *Run* da coleção, ou uma a uma). Elas cobrem o que o enunciado exige: POST, GET geral, GET por ID e DELETE.\n3. As pastas **5 e 6** são extras (PUT opcional, integridade e casos de erro).\n\n## Variáveis da coleção\nOs dados da situação fictícia ficam em `nomeCliente`, `clienteDesde`, `nomeProduto`, `precoProduto` e `quantidade`. Os IDs (`clienteId`, `produtoId`, `pedidoId`) são preenchidos automaticamente pelos testes dos POST.\n\nCada requisição tem testes automáticos (aba *Test Results*) que conferem status, JSON e valores."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "nomeCliente",
+      "value": "Vinícius5474751"
+    },
+    {
+      "key": "clienteDesde",
+      "value": "2026-10-06"
+    },
+    {
+      "key": "nomeProduto",
+      "value": "Baozi Tradicional"
+    },
+    {
+      "key": "precoProduto",
+      "value": "8.50"
+    },
+    {
+      "key": "quantidade",
+      "value": "6"
+    },
+    {
+      "key": "clienteId",
+      "value": ""
+    },
+    {
+      "key": "produtoId",
+      "value": ""
+    },
+    {
+      "key": "pedidoId",
+      "value": ""
+    },
+    {
+      "key": "pedidoExtraId",
+      "value": ""
+    },
+    {
+      "key": "produtoSemEstoqueId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1 - Criar (POST)",
+      "description": "Cria cliente, produto e pedido da situação fictícia. Execute nesta ordem.",
+      "item": [
+        {
+          "name": "1.1 POST Cliente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/clientes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "clientes"
+              ]
+            },
+            "description": "Cadastra o cliente (nome = Nome+RU).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"{{nomeCliente}}\",\n  \"clienteDesde\": \"{{clienteDesde}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201 Created\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Tempo de resposta < 2000 ms\", () => pm.expect(pm.response.responseTime).to.be.below(2000));",
+                  "pm.test(\"Content-Type é JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Retornou id numérico\", () => pm.expect(j.id).to.be.a(\"number\"));",
+                  "pm.test(\"Nome do cliente confere\", () => pm.expect(j.nome).to.eql(pm.collectionVariables.get(\"nomeCliente\")));",
+                  "pm.test(\"clienteDesde confere\", () => pm.expect(j.clienteDesde).to.eql(pm.collectionVariables.get(\"clienteDesde\")));",
+                  "pm.collectionVariables.set(\"clienteId\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.2 POST Produto",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/produtos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "produtos"
+              ]
+            },
+            "description": "Cadastra o produto vendido pela loja.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"{{nomeProduto}}\",\n  \"preco\": {{precoProduto}},\n  \"estoque\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201 Created\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Tempo de resposta < 2000 ms\", () => pm.expect(pm.response.responseTime).to.be.below(2000));",
+                  "pm.test(\"Content-Type é JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Retornou id numérico\", () => pm.expect(j.id).to.be.a(\"number\"));",
+                  "pm.test(\"Nome do produto confere\", () => pm.expect(j.nome).to.eql(pm.collectionVariables.get(\"nomeProduto\")));",
+                  "pm.test(\"Preço confere\", () => pm.expect(Number(j.preco)).to.eql(Number(pm.collectionVariables.get(\"precoProduto\"))));",
+                  "pm.test(\"Produto em estoque (true)\", () => pm.expect(j.estoque).to.eql(true));",
+                  "pm.collectionVariables.set(\"produtoId\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.3 POST Pedido",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pedidos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pedidos"
+              ]
+            },
+            "description": "Registra o pedido ligando o cliente e o produto criados acima.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"produtoId\": {{produtoId}},\n  \"quantidade\": {{quantidade}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201 Created\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Tempo de resposta < 2000 ms\", () => pm.expect(pm.response.responseTime).to.be.below(2000));",
+                  "pm.test(\"Content-Type é JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Retornou id numérico\", () => pm.expect(j.id).to.be.a(\"number\"));",
+                  "pm.test(\"clienteId confere\", () => pm.expect(j.clienteId).to.eql(Number(pm.collectionVariables.get(\"clienteId\"))));",
+                  "pm.test(\"produtoId confere\", () => pm.expect(j.produtoId).to.eql(Number(pm.collectionVariables.get(\"produtoId\"))));",
+                  "pm.test(\"Quantidade confere\", () => pm.expect(j.quantidade).to.eql(Number(pm.collectionVariables.get(\"quantidade\"))));",
+                  "pm.test(\"Cliente do pedido: nome confere\", () => pm.expect(j.cliente.nome).to.eql(pm.collectionVariables.get(\"nomeCliente\")));",
+                  "pm.test(\"Produto do pedido: nome confere\", () => pm.expect(j.produto.nome).to.eql(pm.collectionVariables.get(\"nomeProduto\")));",
+                  "pm.collectionVariables.set(\"pedidoId\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2 - Listar todos (GET)",
+      "description": "Listagem geral das três entidades.",
+      "item": [
+        {
+          "name": "2.1 GET Clientes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/clientes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "clientes"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Tempo de resposta < 2000 ms\", () => pm.expect(pm.response.responseTime).to.be.below(2000));",
+                  "pm.test(\"Content-Type é JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"));",
+                  "const lista = pm.response.json();",
+                  "pm.test(\"Resposta é uma lista\", () => pm.expect(lista).to.be.an(\"array\"));",
+                  "pm.test(\"Lista não está vazia\", () => pm.expect(lista.length).to.be.above(0));",
+                  "pm.test(\"Lista contém o registro criado\", () => pm.expect(lista.some(x => x.id === Number(pm.collectionVariables.get(\"clienteId\")))).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.2 GET Produtos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/produtos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "produtos"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Tempo de resposta < 2000 ms\", () => pm.expect(pm.response.responseTime).to.be.below(2000));",
+                  "pm.test(\"Content-Type é JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"));",
+                  "const lista = pm.response.json();",
+                  "pm.test(\"Resposta é uma lista\", () => pm.expect(lista).to.be.an(\"array\"));",
+                  "pm.test(\"Lista não está vazia\", () => pm.expect(lista.length).to.be.above(0));",
+                  "pm.test(\"Lista contém o registro criado\", () => pm.expect(lista.some(x => x.id === Number(pm.collectionVariables.get(\"produtoId\")))).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.3 GET Pedidos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/pedidos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pedidos"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Tempo de resposta < 2000 ms\", () => pm.expect(pm.response.responseTime).to.be.below(2000));",
+                  "pm.test(\"Content-Type é JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"));",
+                  "const lista = pm.response.json();",
+                  "pm.test(\"Resposta é uma lista\", () => pm.expect(lista).to.be.an(\"array\"));",
+                  "pm.test(\"Lista não está vazia\", () => pm.expect(lista.length).to.be.above(0));",
+                  "pm.test(\"Lista contém o registro criado\", () => pm.expect(lista.some(x => x.id === Number(pm.collectionVariables.get(\"pedidoId\")))).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3 - Consultar por ID (GET /{id})",
+      "description": "Consulta individual usando os IDs salvos.",
+      "item": [
+        {
+          "name": "3.1 GET Cliente por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/clientes/{{clienteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "clientes",
+                "{{clienteId}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Tempo de resposta < 2000 ms\", () => pm.expect(pm.response.responseTime).to.be.below(2000));",
+                  "pm.test(\"Content-Type é JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"id confere\", () => pm.expect(j.id).to.eql(Number(pm.collectionVariables.get(\"clienteId\"))));",
+                  "pm.test(\"Nome confere\", () => pm.expect(j.nome).to.eql(pm.collectionVariables.get(\"nomeCliente\")));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.2 GET Produto por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/produtos/{{produtoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "produtos",
+                "{{produtoId}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Tempo de resposta < 2000 ms\", () => pm.expect(pm.response.responseTime).to.be.below(2000));",
+                  "pm.test(\"Content-Type é JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"id confere\", () => pm.expect(j.id).to.eql(Number(pm.collectionVariables.get(\"produtoId\"))));",
+                  "pm.test(\"Nome confere\", () => pm.expect(j.nome).to.eql(pm.collectionVariables.get(\"nomeProduto\")));",
+                  "pm.test(\"Preço confere\", () => pm.expect(Number(j.preco)).to.eql(Number(pm.collectionVariables.get(\"precoProduto\"))));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.3 GET Pedido por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/pedidos/{{pedidoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pedidos",
+                "{{pedidoId}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Tempo de resposta < 2000 ms\", () => pm.expect(pm.response.responseTime).to.be.below(2000));",
+                  "pm.test(\"Content-Type é JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"id confere\", () => pm.expect(j.id).to.eql(Number(pm.collectionVariables.get(\"pedidoId\"))));",
+                  "pm.test(\"Quantidade confere\", () => pm.expect(j.quantidade).to.eql(Number(pm.collectionVariables.get(\"quantidade\"))));",
+                  "pm.test(\"Cliente confere\", () => pm.expect(j.cliente.nome).to.eql(pm.collectionVariables.get(\"nomeCliente\")));",
+                  "pm.test(\"Produto confere\", () => pm.expect(j.produto.nome).to.eql(pm.collectionVariables.get(\"nomeProduto\")));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4 - Apagar (DELETE /{id})",
+      "description": "Apaga o pedido e comprova com um GET que retorna 404.",
+      "item": [
+        {
+          "name": "4.1 DELETE Pedido",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/pedidos/{{pedidoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pedidos",
+                "{{pedidoId}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204 No Content\", () => pm.response.to.have.status(204));",
+                  "pm.test(\"Corpo vazio\", () => pm.expect(pm.response.text()).to.eql(\"\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.2 GET Pedido apos DELETE (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/pedidos/{{pedidoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pedidos",
+                "{{pedidoId}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404 Not Found\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Content-Type é JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Corpo de erro padronizado (status 404)\", () => pm.expect(j.status).to.eql(404));",
+                  "pm.test(\"Há mensagem de erro\", () => pm.expect(j.mensagem).to.be.a(\"string\"));",
+                  "pm.test(\"Mensagem indica pedido não encontrado\", () => pm.expect(j.mensagem).to.include(\"Pedido não encontrado\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5 - Extras: PUT e integridade (opcional)",
+      "description": "Atualização (PUT) e regra de integridade: não apaga cliente/produto com pedido vinculado.",
+      "item": [
+        {
+          "name": "5.1 PUT Cliente",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/clientes/{{clienteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "clientes",
+                "{{clienteId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"{{nomeCliente}}\",\n  \"clienteDesde\": \"{{clienteDesde}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Content-Type é JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Nome mantido\", () => pm.expect(j.nome).to.eql(pm.collectionVariables.get(\"nomeCliente\")));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.2 PUT Produto",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/produtos/{{produtoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "produtos",
+                "{{produtoId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"{{nomeProduto}}\",\n  \"preco\": {{precoProduto}},\n  \"estoque\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Content-Type é JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Nome mantido\", () => pm.expect(j.nome).to.eql(pm.collectionVariables.get(\"nomeProduto\")));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.3 POST Pedido extra (para os testes seguintes)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pedidos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pedidos"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"produtoId\": {{produtoId}},\n  \"quantidade\": 10\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201 Created\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"pedidoExtraId\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.4 PUT Pedido (quantidade 10 para 12)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pedidos/{{pedidoExtraId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pedidos",
+                "{{pedidoExtraId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"produtoId\": {{produtoId}},\n  \"quantidade\": 12\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200 OK\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Quantidade atualizada para 12\", () => pm.expect(j.quantidade).to.eql(12));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.5 DELETE Cliente com pedido (409)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/clientes/{{clienteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "clientes",
+                "{{clienteId}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 409 Conflict\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"Content-Type é JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Corpo de erro padronizado (status 409)\", () => pm.expect(j.status).to.eql(409));",
+                  "pm.test(\"Há mensagem de erro\", () => pm.expect(j.mensagem).to.be.a(\"string\"));",
+                  "pm.test(\"Mensagem cita pedidos vinculados\", () => pm.expect(j.mensagem).to.include(\"pedidos vinculados\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.6 DELETE Produto com pedido (409)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/produtos/{{produtoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "produtos",
+                "{{produtoId}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 409 Conflict\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"Content-Type é JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Corpo de erro padronizado (status 409)\", () => pm.expect(j.status).to.eql(409));",
+                  "pm.test(\"Há mensagem de erro\", () => pm.expect(j.mensagem).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.7 DELETE Pedido extra (limpeza)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/pedidos/{{pedidoExtraId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pedidos",
+                "{{pedidoExtraId}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204 No Content\", () => pm.response.to.have.status(204));",
+                  "pm.test(\"Corpo vazio\", () => pm.expect(pm.response.text()).to.eql(\"\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "6 - Extras: validações e erros",
+      "description": "Casos negativos: dados inválidos (400), recurso inexistente (404) e produto sem estoque (422).",
+      "item": [
+        {
+          "name": "6.1 POST Cliente sem nome (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/clientes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "clientes"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"\",\n  \"clienteDesde\": \"{{clienteDesde}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Content-Type é JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Corpo de erro padronizado (status 400)\", () => pm.expect(j.status).to.eql(400));",
+                  "pm.test(\"Há mensagem de erro\", () => pm.expect(j.mensagem).to.be.a(\"string\"));",
+                  "pm.test(\"Erro aponta o campo nome\", () => pm.expect(j.campos).to.have.property(\"nome\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.2 POST Produto com preço negativo (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/produtos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "produtos"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Produto invalido\",\n  \"preco\": -5,\n  \"estoque\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Content-Type é JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Corpo de erro padronizado (status 400)\", () => pm.expect(j.status).to.eql(400));",
+                  "pm.test(\"Há mensagem de erro\", () => pm.expect(j.mensagem).to.be.a(\"string\"));",
+                  "pm.test(\"Erro aponta o campo preco\", () => pm.expect(j.campos).to.have.property(\"preco\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.3 POST Pedido com quantidade 0 (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pedidos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pedidos"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"produtoId\": {{produtoId}},\n  \"quantidade\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Content-Type é JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Corpo de erro padronizado (status 400)\", () => pm.expect(j.status).to.eql(400));",
+                  "pm.test(\"Há mensagem de erro\", () => pm.expect(j.mensagem).to.be.a(\"string\"));",
+                  "pm.test(\"Erro aponta o campo quantidade\", () => pm.expect(j.campos).to.have.property(\"quantidade\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.4 POST Cliente com JSON malformado (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/clientes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "clientes"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"nome\": ",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Content-Type é JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Corpo de erro padronizado (status 400)\", () => pm.expect(j.status).to.eql(400));",
+                  "pm.test(\"Há mensagem de erro\", () => pm.expect(j.mensagem).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.5 POST Pedido com cliente inexistente (404)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pedidos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pedidos"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clienteId\": 999999,\n  \"produtoId\": {{produtoId}},\n  \"quantidade\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404 Not Found\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Content-Type é JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Corpo de erro padronizado (status 404)\", () => pm.expect(j.status).to.eql(404));",
+                  "pm.test(\"Há mensagem de erro\", () => pm.expect(j.mensagem).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.6 POST Produto sem estoque (201)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/produtos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "produtos"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Baozi Esgotado\",\n  \"preco\": 9.90,\n  \"estoque\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201 Created\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"produtoSemEstoqueId\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.7 POST Pedido de produto sem estoque (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pedidos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pedidos"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"produtoId\": {{produtoSemEstoqueId}},\n  \"quantidade\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 422 Unprocessable Entity\", () => pm.response.to.have.status(422));",
+                  "pm.test(\"Content-Type é JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Corpo de erro padronizado (status 422)\", () => pm.expect(j.status).to.eql(422));",
+                  "pm.test(\"Há mensagem de erro\", () => pm.expect(j.mensagem).to.be.a(\"string\"));",
+                  "pm.test(\"Mensagem cita falta de estoque\", () => pm.expect(j.mensagem).to.include(\"sem estoque\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.8 GET Cliente inexistente (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/clientes/999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "clientes",
+                "999999"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404 Not Found\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Content-Type é JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Corpo de erro padronizado (status 404)\", () => pm.expect(j.status).to.eql(404));",
+                  "pm.test(\"Há mensagem de erro\", () => pm.expect(j.mensagem).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.9 GET Produto inexistente (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/produtos/999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "produtos",
+                "999999"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404 Not Found\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Content-Type é JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Corpo de erro padronizado (status 404)\", () => pm.expect(j.status).to.eql(404));",
+                  "pm.test(\"Há mensagem de erro\", () => pm.expect(j.mensagem).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.10 DELETE Pedido inexistente (404)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/pedidos/999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pedidos",
+                "999999"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404 Not Found\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Content-Type é JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Corpo de erro padronizado (status 404)\", () => pm.expect(j.status).to.eql(404));",
+                  "pm.test(\"Há mensagem de erro\", () => pm.expect(j.mensagem).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.11 DELETE Produto sem estoque (limpeza)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/produtos/{{produtoSemEstoqueId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "produtos",
+                "{{produtoSemEstoqueId}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204 No Content\", () => pm.response.to.have.status(204));",
+                  "pm.test(\"Corpo vazio\", () => pm.expect(pm.response.text()).to.eql(\"\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
